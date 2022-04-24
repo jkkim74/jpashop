@@ -36,9 +36,10 @@ public class OrderServiceTest {
     OrderRepository orderRepository;
 
     @Test
+    @Rollback(value = false)
     public void 주문() throws Exception{
         //given
-        Member member = createMember();
+        Member member = createMember("회원2");
 
         Item book = createBook("시골JPA", 10, 10000);
 
@@ -60,7 +61,7 @@ public class OrderServiceTest {
     @Test(expected = NotEnoughStockException.class)
     public void 상품주문_재고수량초과() throws Exception{
         //given
-        Member member = createMember();
+        Member member = createMember("회원1");
         Item book = createBook("시골JPA", 10, 10000);
 
         int orderCount = 11;
@@ -82,9 +83,9 @@ public class OrderServiceTest {
         return book;
     }
 
-    private Member createMember() {
+    private Member createMember(String memberName) {
         Member member = new Member();
-        member.setName("회원1");
+        member.setName(memberName);
         member.setAddress(new Address("성남","미금로","123-123"));
         em.persist (member);
         return member;
@@ -93,7 +94,7 @@ public class OrderServiceTest {
     @Test
     public void 주무취소() throws Exception{
         //given
-        Member member = createMember ();
+        Member member = createMember ("회원1");
         Item item = createBook("시골JPA", 10, 10000);
         int orderCount = 2;
         Long orderId = orderService.order(member.getId (), item.getId(), orderCount);
@@ -105,6 +106,27 @@ public class OrderServiceTest {
         Order getOrder = orderRepository.findOne (orderId);
         assertEquals ("주문취소시 상태는 CANCEL 이다.",OrderStatus.CANCEL,getOrder.getStatus());
         assertEquals("주문취소된 상품은 취소시, 취소수량만큼 재고가 증가해야한다.",10, item.getStockQuantity());
+
+
+    }
+
+    @Test
+    @Rollback(value = false)
+    public void 주무취소_only() throws Exception{
+        //given
+//        Member member = createMember ();
+//        Item item = createBook("시골JPA", 10, 10000);
+//        int orderCount = 2;
+//        Long orderId = orderService.order(member.getId (), item.getId(), orderCount);
+        Long orderId = 8l;
+
+        //when
+        orderService.cancelOrder(orderId);
+
+        //then
+        Order getOrder = orderRepository.findOne (orderId);
+        assertEquals ("주문취소시 상태는 CANCEL 이다.",OrderStatus.CANCEL,getOrder.getStatus());
+        //assertEquals("주문취소된 상품은 취소시, 취소수량만큼 재고가 증가해야한다.",10, item.getStockQuantity());
 
 
     }

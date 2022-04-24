@@ -51,7 +51,7 @@ public class OrderService {
     /**
      * 주문취소
      */
-    @Transactional
+   //@Transactional
     public void cancelOrder(Long orderId){
         // 주문조회
         Order order = orderRepository.findOne(orderId);
