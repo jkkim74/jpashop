@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.validation.Valid;
@@ -21,7 +22,7 @@ public class ItemController {
 
     @GetMapping("/items/new")
     public String createForm(Model model){
-        model.addAttribute("bookForm",new BookForm());
+        model.addAttribute("itemForm",new BookForm());
         return "items/createItemForm";
     }
     @PostMapping("/items/new")
@@ -49,5 +50,41 @@ public class ItemController {
         List<Item> items = itemService.findItems();
         model.addAttribute("items",items);
         return "items/itemList";
+    }
+
+    @GetMapping("items/{itemId}/edit")
+    public String updateItemForm(@PathVariable("itemId") Long itemId, Model model){
+        Book item = (Book) itemService.findOne(itemId);
+
+        BookForm itemForm = new BookForm();
+        itemForm.setId(item.getId());
+        itemForm.setName(item.getName());
+        itemForm.setPrice(item.getPrice());
+        itemForm.setStockQuantity(item.getStockQuantity());
+        itemForm.setAuthor(item.getAuthor());
+        itemForm.setIsbn(item.getIsbn());
+
+        model.addAttribute("itemForm",itemForm);
+        return "items/updateItemForm";
+    }
+
+    @PostMapping("items/{itemId}/edit")
+    public String updateItem(BookForm itemForm, Model model, BindingResult result){
+
+        if(result.hasErrors()){
+            return "items/createItemForm";
+        }
+
+//        Book book = new Book();
+//        book.setId(itemForm.getId());//id를 넣으면 업데이트 쿼리가 발생함..
+//        book.setName(itemForm.getName());
+//        book.setPrice(itemForm.getPrice());
+//        book.setStockQuantity(itemForm.getStockQuantity());
+//        book.setAuthor(itemForm.getAuthor());
+//        book.setIsbn(itemForm.getIsbn());
+        BookDto bookDto = BookDto.builder().name(itemForm.getName()).price(itemForm.getPrice()).stockQuantity(itemForm.getStockQuantity()).build();
+        itemService.updateItem(itemForm.getId(), bookDto);
+        return "redirect:/items";
+
     }
 }

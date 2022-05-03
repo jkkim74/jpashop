@@ -1,5 +1,6 @@
 package jpabook.jpashop.domain.item;
 
+import jpabook.jpashop.controller.BookDto;
 import jpabook.jpashop.domain.Category;
 import jpabook.jpashop.exception.NotEnoughStockException;
 import lombok.Getter;
@@ -48,4 +49,12 @@ public abstract class Item {
 
     }
 
+    /**
+     * 수정항목: 가격,상품명,재고수량
+     */
+    public void modify(BookDto bookDto) {
+        this.price = bookDto.getPrice();
+        this.name = bookDto.getName();
+        this.stockQuantity = bookDto.getStockQuantity();
+    }
 }
