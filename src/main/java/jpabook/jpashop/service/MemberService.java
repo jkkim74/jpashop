@@ -40,4 +40,11 @@ public class MemberService {
     public Member findOne(Long id){
         return memberRepository.findOne(id);
     }
+
+    @Transactional
+    public void update(Long id, String name) {
+        //dirty checking에 의해 업데이트 처리된다.(변경감지)
+        Member member = memberRepository.findOne(id);
+        member.setName(name);
+    }
 }
