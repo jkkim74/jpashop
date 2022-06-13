@@ -19,7 +19,7 @@ public class OrderQueryRepository {
         List<OrderQueryDto> result = findOrders();
         result.forEach (o->{
             List<OrderItemQueryDto> orderItems = finOrderItems (o.getOrderId());
-            o.setOrderItem (orderItems);
+            o.setOrderItems(orderItems);
         });
         return result;
     }
@@ -48,7 +48,7 @@ public class OrderQueryRepository {
 
         Map<Long, List<OrderItemQueryDto>> orderItemMap = findOrderItemMap (orderIds);
 
-        result.forEach(o -> o.setOrderItem(orderItemMap.get(o.getOrderId())));
+        result.forEach(o -> o.setOrderItems(orderItemMap.get(o.getOrderId())));
 
         return result;
     }
@@ -72,5 +72,16 @@ public class OrderQueryRepository {
         return result.stream()
                 .map(o -> o.getOrderId())
                 .collect(Collectors.toList());
+    }
+
+    public List<OrderFlatDto> findAllByDto_flat() {
+        return em.createQuery (
+                "select new jpabook.jpashop.repository.order.query.OrderFlatDto(o.id,m.name,o.orderDate,o.status,d.address,i.name,oi.orderPrice,oi.count)" +
+                        " from Order o" +
+                        " join o.member m" +
+                        " join o.delivery d" +
+                        " join o.orderItems oi" +
+                        " join oi.item i", OrderFlatDto.class)
+                .getResultList();
     }
 }
