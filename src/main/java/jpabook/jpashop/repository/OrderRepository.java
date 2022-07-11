@@ -1,11 +1,11 @@
 package jpabook.jpashop.repository;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jpabook.jpashop.domain.*;
 import jpabook.jpashop.domain.Order;
-import jpabook.jpashop.domain.OrderStatus;
-import jpabook.jpashop.domain.QMember;
-import jpabook.jpashop.domain.QOrder;
+import jpabook.jpashop.domain.item.QItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
@@ -16,11 +16,19 @@ import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static jpabook.jpashop.domain.QDelivery.delivery;
+import static jpabook.jpashop.domain.QMember.member;
+import static jpabook.jpashop.domain.QOrder.order;
+import static jpabook.jpashop.domain.QOrderItem.orderItem;
+import static jpabook.jpashop.domain.item.QItem.item;
+
 @Repository
 @RequiredArgsConstructor
 public class OrderRepository {
 
     public final EntityManager em;
+
+    private final JPAQueryFactory jpaQueryFactory;
 
     public void save(Order order){
         em.persist(order);
@@ -99,34 +107,36 @@ public class OrderRepository {
     }
 
     public List<Order> findAllWithItem() {
-        return em.createQuery(
-                        "select distinct o from Order o" +
-                                " join fetch o.member m" +
-                                " join fetch o.delivery d" +
-                                " join fetch o.orderItems oi" +
-                                " join fetch oi.item i", Order.class)
-                .getResultList();
+       return jpaQueryFactory.selectFrom(order)
+                .join(order.member,member).fetchJoin()
+                .join(order.delivery,delivery).fetchJoin()
+                .join(order.orderItems,orderItem).fetchJoin()
+                .join(orderItem.item,item).fetchJoin()
+                .distinct()
+                .fetch();
+//        return em.createQuery(
+//                        "select distinct o from Order o" +
+//                                " join fetch o.member m" +
+//                                " join fetch o.delivery d" +
+//                                " join fetch o.orderItems oi" +
+//                                " join fetch oi.item i", Order.class)
+//                .getResultList();
     }
 
     public List<Order> findAllWithMemberDelivery(int offset, int limit) {
-        return em.createQuery(
-                        "select o from Order o" +
-                                " join fetch o.member m" +
-                                " join fetch o.delivery d", Order.class)
-                .setFirstResult(offset)
-                .setMaxResults(limit)
-                .getResultList();
+        return jpaQueryFactory.select(order)
+                .from(order)
+                .join(order.member, member).fetchJoin()
+                .join(order.delivery, delivery).fetchJoin()
+                .offset(offset)
+                .limit(limit)
+                .fetch();
     }
 
     public List<Order> findAll(OrderSearch orderSearch){
-        QOrder order = QOrder.order;
-        QMember member = QMember.member;
-
-        JPAQueryFactory query = new JPAQueryFactory(em);
-
-        return query.select(order)
+        return jpaQueryFactory.select(order)
                 .from(order)
-                .join(order.member,member)
+                .join(order.member, member)
                 .where(statusEq(orderSearch.getOrderStatus()), nameLike(orderSearch))
                 .limit(1000)
                 .fetch();
@@ -137,13 +147,13 @@ public class OrderRepository {
         if(!StringUtils.hasText(orderSearch.getMemberName())){
             return null;
         }
-        return QMember.member.name.like(orderSearch.getMemberName());
+        return member.name.like(orderSearch.getMemberName());
     }
 
     private BooleanExpression statusEq(OrderStatus statusCond){
         if(statusCond == null){
             return null;
         }
-        return QOrder.order.status.eq(statusCond);
+        return order.status.eq(statusCond);
     }
 }
