@@ -114,6 +114,10 @@ public class OrderRepository {
                 .join(orderItem.item,item).fetchJoin()
                 .distinct()
                 .fetch();
+
+       // distinct는 쿼리의 distinct뿐만 아니라,  psql 에 distinct로 객체의 키의 중복을 피한다..
+        // 1:N 패치조인에서는 페이징이 안된다..
+        // 1:N:N...은 안된다.. 데이타에 정합성에 문제가 있다.. 1:N 패치조인은 하나만 해야 한다..
 //        return em.createQuery(
 //                        "select distinct o from Order o" +
 //                                " join fetch o.member m" +

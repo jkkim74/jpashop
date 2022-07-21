@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -49,13 +50,22 @@ public class MemberServiceTest {
         member1.setName("kim1");
 
         Member member2 = new Member();
-        member2.setName("kim1");
+        member2.setName("kim2");
         //when
         memberService.join(member1);
         memberService.join(member2);
 
         //then
-        fail("예외가 발생 해야 합다.");
+        //fail("예외가 발생 해야 합다.");
+    }
+    
+    @Test
+    @Rollback(value = false)
+    public void 회원정보업데이트() {
+        String id = "1";
+        Long sId = Long.parseLong(id);
+        memberService.update(sId,"userC");
+        
     }
 
 }

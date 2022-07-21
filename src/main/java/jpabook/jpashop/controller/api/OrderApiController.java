@@ -68,6 +68,14 @@ public class OrderApiController {
         return orderQueryService.ordersV2();
     }
 
+    /**
+     * only 페치조인으로 처리 (collection 데이타 포함)
+     * 장점:
+     * 하나의 쿼리로 처리가 가능 하고 n+1 문제가 발생하지 않는다..
+     * 단점 :
+     * 페이징처리가 되지 않는다.
+     * @return
+     */
     @GetMapping("/api/v3/orders")
     public List<OrderDto> ordersV3() {
         List<Order> orders = orderRepository.findAllWithItem();
